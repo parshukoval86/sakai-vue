@@ -8,28 +8,13 @@ const model = ref([
     {
         label: 'Главная',
         items: [
-            {label: 'Весь транспорт', icon: 'pi pi-fw pi-home', to: '/1'},
-            {label: 'Список автотранспорта', icon: 'pi pi-fw pi-home', to: '/2'},
+            {label: 'Весь транспорт', icon: 'pi pi-fw pi-home', to: '/'},
+            {label: 'Список автотранспорта', icon: 'pi pi-fw pi-home', to: '/TS'},
+            {label: 'Список организаций', icon: 'pi pi-fw pi-home', to: '/ORG'},
+            {label: 'Список типов транспортных средств', icon: 'pi pi-fw pi-home', to: '/Type'},
+            {label: 'Список участков', icon: 'pi pi-fw pi-home', to: '/place'},
 
 
-        ]
-    },
-    {
-        label: 'Список организаций', icon: 'pi pi-fw pi-sitemap',
-        items: [
-            {label: 'Частник', icon: 'pi pi-fw pi-id-card', to: '/formlayout'},
-            {label: 'УУТТ', icon: 'pi pi-fw pi-check-square', to: '/input'},
-            {label: "НПО", icon: "pi pi-fw pi-bookmark", to: "/floatlabel"},
-            
-        ]
-    },
-    {
-        label: 'Список типов транспорта',
-        items: [
-            {label: 'Тягач', icon: 'pi pi-fw pi-eye', to: '/blocks'},
-            {label: 'АПШ', icon: 'pi pi-fw pi-eye', to: '/blocks'},
-            {label: 'АвтоКран', icon: 'pi pi-fw pi-eye', to: '/blocks'},
-            
         ]
     },
     {

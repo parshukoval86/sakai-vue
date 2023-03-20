@@ -39,18 +39,18 @@ export default class UprrService {
         }
     }
     //Подгрузка списка типов ТС
-    async getType() {
-        try {
-            const res = await axios.get('http://10.10.10.19/npo-service/type.php')
-            return res;
-        } catch (error) {
-            console.log(error)
-            return error;
-        }
-    }
+    // async getType() {
+    //     try {
+    //         const res = await axios.get('http://10.10.10.19/npo-service/type.php')
+    //         return res;
+    //     } catch (error) {
+    //         console.log(error)
+    //         return error;
+    //     }
+    // }
     //Подгрузка данных для диаграмм
     async getData(newDate,startDate,endDate) {
-        let url = `http://10.10.10.19/npo-service/allCars.php?date=${newDate}&start=${startDate}&end=${endDate}`;
+        let url = `http://10.10.10.19/npo-service/BarData.php?date=${newDate}&start=${startDate}&end=${endDate}`;
         try {
             const res = await axios.get(url)
             console.log(url);
