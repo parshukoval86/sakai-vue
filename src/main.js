@@ -1,4 +1,5 @@
 import { createApp } from 'vue';
+import { createPinia } from 'pinia';
 import App from './App.vue';
 import router from './router';
 
@@ -100,14 +101,14 @@ import TreeTable from 'primevue/treetable';
 import TriStateCheckbox from 'primevue/tristatecheckbox';
 import VirtualScroller from 'primevue/virtualscroller';
 import VueApexCharts from "vue3-apexcharts";
-
+import print from 'vue3-print-nb';
 import CodeHighlight from '@/components/CodeHighlight.vue';
 import BlockViewer from '@/components/BlockViewer.vue';
 
 import '@/assets/styles.scss';
 
 const app = createApp(App);
-
+const pinia = createPinia();
 app.use(router);
 app.use(PrimeVue, 
     { 
@@ -235,6 +236,8 @@ app.use(ToastService);
 app.use(DialogService);
 app.use(ConfirmationService);
 app.use(VueApexCharts);
+app.use(pinia);
+app.use(print);
 
 app.directive('tooltip', Tooltip);
 app.directive('badge', BadgeDirective);
