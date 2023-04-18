@@ -8,9 +8,11 @@ import { useRoute } from 'vue-router';
 import html2pdf from "html2pdf.js";
 import print from 'vue3-print-nb';
 import { jsPDF } from "jspdf";
+import html2canvas from 'html2canvas';
 
 const route = useRoute();
 
+const loadPdf = ref(false);
 const { layoutConfig } = useLayout();
 let documentStyle = getComputedStyle(document.documentElement);
 let textColor = documentStyle.getPropertyValue('--text-color');
@@ -81,12 +83,24 @@ const options = {
     //     customScale: 0.7
     //   }
     // },
+    chart: {
+        animations: 'false'
+    },
     labels: ['Переезды', 'ПРР', 'Ожидание'],
     colors: ['#3CBA9F', '#3E95CD', '#C45850'],
     legend: {
         position: 'top',
-        fontSize: '20px'
+        fontSize: '20px',
+        showFroSingleSeries: 'true',
     },
+    title: {
+            
+            text: 'Произведённые работы спецтехникой в процентном соотношении',
+            align: 'left',
+            style: {
+                fontSize: '16px'
+            }
+        },
     dataLabels: {
         enabled: true,
         style: {
@@ -256,6 +270,13 @@ const listData = () => {
         stroke: {
             width: 2
         },
+        title:{
+            text: `Показатели секунд на трубу ${pred.value} ${tit.value}`,
+            align: 'left',
+            style: {
+                fontSize: '20px'
+            }
+        },
         xaxis: {
             labels: {
                 rotate: -45
@@ -315,6 +336,7 @@ const setChart = () => {
         chart: {
             height: 350,
             type: 'bar',
+           
             events: {
                 click: function (chart, w, e) {
                     // console.log(chart, w, e)
@@ -341,9 +363,17 @@ const setChart = () => {
             }
         },
         legend: {
-            show: true,
+            show: false,
             position: 'top',
-            fontSize: '20px'
+            fontSize: '20px',
+            
+        },
+        title: {
+            text: `Секунды на трубу ${tit.value}`,
+            align: 'left',
+            style: {
+                fontSize: '20px'
+            }
         },
         yaxis: {
             min: 0,
@@ -352,9 +382,9 @@ const setChart = () => {
         xaxis: {
             categories: [['План'], ['Факт']],
             labels: {
-                show: false,
+                show: true,
                 style: {
-                    colors: colorsSec,
+                    
                     fontSize: '20px'
                 }
             }
@@ -390,9 +420,16 @@ const setChart = () => {
             }
         },
         legend: {
-            show: true,
+            show: false,
             position: 'top',
             fontSize: '20px'
+        },
+        title: {
+            text: `Рублей на трубу ${tit.value}`,
+            align: 'left',
+            style: {
+                fontSize: '20px'
+            }
         },
         yaxis: {
             min: 0,
@@ -401,9 +438,9 @@ const setChart = () => {
         xaxis: {
             categories: [['План'], ['Факт']],
             labels: {
-                show: false,
+                show: true,
                 style: {
-                    colors: colorsRub,
+                    
                     fontSize: '20px'
                 }
             }
@@ -439,9 +476,16 @@ const setChart = () => {
             }
         },
         legend: {
-            show: true,
+            show: false,
             position: 'top',
             fontSize: '20px'
+        },
+        title: {
+            text: `Скорость ${tit.value}`,
+            align: 'left',
+            style: {
+                fontSize: '20px'
+            }
         },
         yaxis: {
             min: 0,
@@ -450,9 +494,9 @@ const setChart = () => {
         xaxis: {
             categories: [['План'], ['Факт']],
             labels: {
-                show: false,
+                show: true,
                 style: {
-                    colors: colorsSpeed,
+                    
                     fontSize: '20px'
                 }
             }
@@ -471,19 +515,32 @@ const changeId = () => {
     }
     console.log(route.params.id);
 };
+const secChart = ref(null);
+const rubChart = ref(null);
+const speedChart = ref(null);
+const barChart = ref(null);
+const pieChart = ref(null);
+const printPDF = async () => {
+    loadPdf.value = true;
 
-const exportPDF = () => {
-    /* html2pdf(document.getElementById("charts"), {
-        margin: 1,
-        filename: "i-was-html.pdf",
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 3 },
-        jsPDF:        {  format: 'a4', orientation: 'landscape' },
-        pagebreak: { mode: 'avoid-all', before: ['#page1','#page2'] }
-    }); */
-
+    console.log(secChart);
+    /* 2480х3508 */
+    let wid = 2480;
+    let hei = 3508;
+    const pdf = new jsPDF({orientation: "portrait",
+        unit: 'px',
+        format: "A2",
+        hotfixes: ["px_scaling"] 
+    });
+    await html2canvas(document.querySelector('#test'), {width: wid-100, height: hei-200}).then(function(canvas)  {
+        let imgData = canvas.toDataURL('image/png');              
+        pdf.addImage(imgData, 'PNG', 20, 50);
+    });
     
+    pdf.save('ttt.pdf');
+    loadPdf.value = false;
 };
+
 
 watch(selPlace, () => {
     if (selPlace.value != null) {
@@ -522,8 +579,8 @@ watch(prrData, () => {
 </script>
 
 <template>
-    <div class="grid p-fluid">
-        <div class="col12 xl:col-12">
+    <div class="grid p-fluid" >
+        <div class="col12 xl:col-12" >
             <div class="card flex flex-row justify-content-center">
                 <div class="flex flex-column align-items-start justify-content-center" style="margin-right: 2rem">
                     <label for="calend">Дата</label>
@@ -565,96 +622,102 @@ watch(prrData, () => {
                     <label for="org">Список участков</label>
                     <Dropdown v-model="selectedCity" :options="places" optionLabel="name" placeholder="Select a City" class="w-full md:w-14rem" @change="changeDate()"/>
                 </div>
-                <!-- <div class="flex flex-column align-items-start justify-content-center" style="margin-right: 2rem">
-                    <label for="calend">Дата</label>
-                    <Button label="Сохранить в PDF" v-print/>
-                </div> -->
-            </div>
-        </div>
-        <div class="col-12 xl:col-12" v-if="route.params.id == 'TS' && selAuto == null">
-            <div class="card flex flex-column justify-content-center">
-                <h2>Необходимо выбрать транспортное средство</h2>
-            </div>
-        </div>
-        <div class="col-12 xl:col-12" v-if="route.params.id == 'ORG' && selOrg == null">
-            <div class="card flex flex-column justify-content-center">
-                <h2>Необходимо выбрать Организацию</h2>
-            </div>
-        </div>
-        <div class="col-12 xl:col-12" v-if="route.params.id == 'Type' && selType == null">
-            <div class="card flex flex-column justify-content-center">
-                <h2>Необходимо выбрать тип транспортного средства</h2>
-            </div>
-        </div>
-        <div class="col-12 xl:col-12" v-if="route.params.id == 'place' && selPlace == null">
-            <div class="card flex flex-column justify-content-center">
-                <h2>Необходимо выбрать хотя бы один участок</h2>
-            </div>
-        </div>
-        <div class="col-12 xl:col-12" v-if="route.params.id == 'TS' && selAuto != null && prrData.sum.DriveTime == 0">
-            <div class="card flex flex-column justify-content-center">
-                <h2>{{ selAuto.gar_number }} {{ selAuto.type }} не работал в указанный период</h2>
-            </div>
-        </div>
-        <div id="charts" class="col-12 xl:col-12 grid">
-            <div class="col-12 xl:col-12" v-if="loading">
-                <div class="card flex flex-column justify-content-center">
-                    <div class="flex align-items-center justify-content-center">
-                        <h2>Цех доставки НПО {{ selectedCity.name }}</h2>
-                    </div>
-                    <div class="flex align-items-center justify-content-center">
-                        <h5 v-if="route.params.id == 'TS' && selAuto != null">{{ selAuto.gar_number }} {{ selAuto.type }}</h5>
-                        <h5 v-if="route.params.id == 'ORG' && selOrg != null">Показатели работы спецтехники {{ selOrg.label }} {{ tit }}</h5>
-                        <h5 v-if="route.params.id == 'Type' && selType != null">Показатели работы спецтехники типа {{ selType.label }} {{ tit }}</h5>
-                        <h5 v-if="route.params.id == 'place' && selPlace != null">Показатели работы спецтехники {{ placeTit }} {{ tit }}</h5>
-                        <h5 v-if="route.params.id == undefined">Показатели работы всей спецтехники {{ tit }}</h5>
-                    </div>
+                <div class="flex flex-column align-items-start justify-content-center" style="margin-right: 2rem">
+                    <Button label="Сохранить в PDF" @click="printPDF()"/>
+                    <span> {{ loadPdf ? "Формирую файл" : '' }} </span>
                 </div>
             </div>
-            <div class="col-12 xl:col-6" v-if="loading">
-                <div class="card">
-                    <h5>Секунды на трубу {{ tit }}</h5>
-                    <div id="chart">
-                        <apexchart type="bar" height="350" :options="secChartOptions" :series="secChartData"></apexchart>
+        </div>
+        <div class="grid col12 xl:col-12" id="test">
+            
+            <div class="col-12 xl:col-12" v-if="route.params.id == 'TS' && selAuto == null">
+                    <div class="card flex flex-column justify-content-center">
+                        <h2>Необходимо выбрать транспортное средство</h2>
                     </div>
                 </div>
-            </div>
+                <div class="col-12 xl:col-12" v-if="route.params.id == 'ORG' && selOrg == null">
+                    <div class="card flex flex-column justify-content-center">
+                        <h2>Необходимо выбрать Организацию</h2>
+                    </div>
+                </div>
+                <div class="col-12 xl:col-12" v-if="route.params.id == 'Type' && selType == null">
+                    <div class="card flex flex-column justify-content-center">
+                        <h2>Необходимо выбрать тип транспортного средства</h2>
+                    </div>
+                </div>
+                <div class="col-12 xl:col-12" v-if="route.params.id == 'place' && selPlace == null">
+                    <div class="card flex flex-column justify-content-center">
+                        <h2>Необходимо выбрать хотя бы один участок</h2>
+                    </div>
+                </div>
+                <div class="col-12 xl:col-12" v-if="route.params.id == 'TS' && selAuto != null && prrData.sum.DriveTime == 0">
+                    <div class="card flex flex-column justify-content-center">
+                        <h2>{{ selAuto.gar_number }} {{ selAuto.type }} не работал в указанный период</h2>
+                    </div>
+                </div>
+                <div id="charts" class="col-12 xl:col-12 grid">
 
-            <div class="col-12 xl:col-6" v-if="loading">
-                <div class="card">
-                    <h5>Рублей на трубу {{ tit }}</h5>
-                    <div id="chart">
-                        <apexchart type="bar" height="350" :options="rubChartOptions" :series="rubChartData"></apexchart>
+                    <div class="col-12 xl:col-12" v-if="loading">
+                        <div class="card flex flex-column justify-content-center" >
+                            <div class="flex align-items-center justify-content-center">
+                                <h2>Цех доставки НПО {{ selectedCity.name }}</h2>
+                            </div>
+                            <div class="flex align-items-center justify-content-center">
+                                <h5 v-if="route.params.id == 'TS' && selAuto != null">{{ selAuto.gar_number }} {{ selAuto.type }}</h5>
+                                <h5 v-if="route.params.id == 'ORG' && selOrg != null">Показатели работы спецтехники {{ selOrg.label }} {{ tit }}</h5>
+                                <h5 v-if="route.params.id == 'Type' && selType != null">Показатели работы спецтехники типа {{ selType.label }} {{ tit }}</h5>
+                                <h5 v-if="route.params.id == 'place' && selPlace != null">Показатели работы спецтехники {{ placeTit }} {{ tit }}</h5>
+                                <h5 v-if="route.params.id == undefined">Показатели работы всей спецтехники {{ tit }}</h5>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
+                    <div class="col-12 xl:col-6" v-if="loading">
+                        <div class="card">
+                            
+                            <div id="chart" >
+                                <apexchart ref="secChart" height="350" type="bar"  :options="secChartOptions" :series="secChartData"></apexchart>
+                            </div>
+                        </div>
+                    </div>
 
-            <div class="col-12 xl:col-6" id="page1" v-if="loading">
-                <div class="card">
-                    <h5>Скорость {{ tit }}</h5>
-                    <div id="chart">
-                        <apexchart type="bar" height="350" :options="speedChartOptions" :series="speedChartData"></apexchart>
+                    <div class="col-12 xl:col-6" v-if="loading">
+                        <div class="card">
+                            
+                            <div id="chart">
+                                <apexchart ref="rubChart" type="bar" height="350" :options="rubChartOptions" :series="rubChartData"></apexchart>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
 
-            <div class="col-12 xl:col-6" v-if="loading">
-                <div class="card">
-                    <h5>Произведённые работы спецтехникой в процентном соотношении</h5>
-                    <div>
-                        <apexchart height="350" type="pie" :options="options" :series="series"></apexchart>
+                    <div class="col-12 xl:col-6" id="page1" v-if="loading">
+                        <div class="card">
+                            
+                            <div id="chart">
+                                <apexchart ref="speedChart" type="bar" height="350" :options="speedChartOptions" :series="speedChartData"></apexchart>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
 
-            <div class="col-12 xl:col-12" id="page2" v-if="loading">
-                <div class="card flex flex-column align-items-center">
-                    <h5 class="text-left w-full">Показатели секунд на трубу {{ pred }} {{ tit }}</h5>
-                    <div style="width: 100%">
-                        <apexchart type="bar" height="500" :options="barOpt" :series="barData"></apexchart>
+                    <div class="col-12 xl:col-6" v-if="loading">
+                        <div class="card">
+                            
+                            <div>
+                                <apexchart ref="pieChart" height="350" type="pie" :options="options" :series="series"></apexchart>
+                            </div>
+                        </div>
                     </div>
+
+                    <div class="col-12 xl:col-12" id="page2" v-if="loading">
+                        <div class="card flex flex-column align-items-center">
+                        
+                            <div style="width: 100%">
+                                <apexchart ref="barChart" type="bar" height="500" :options="barOpt" :series="barData"></apexchart>
+                            </div>
+                        </div>
+                    </div>
+            
                 </div>
-            </div>
-    </div>
+        </div>
+
     </div>
 </template>
